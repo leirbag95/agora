@@ -121,32 +121,16 @@ export default function Shop() {
     return s[tokenId]
   }
 
-  const clickOutsideSidebar = () => {
-    document && (
-      document.addEventListener("click", (e) => {
-        let classList = e.target.className;
-        if (
-          typeof classList === "string" &&
-          !classList.includes("sidebar")
-        ) {
-          setIsOpen(false);
-        }
-      })
-    )
-  }
-
   useEffect(() => {
     // if wallet is not connected, create a new instance of Web3Modal and connect the MetaMask wallet     
     fecthShopNFTGenerator();
     fetchCollectibles();
-    clickOutsideSidebar()
-    
   }, []);
+
 
   return (
     <div style={{ margin: "0 50px" }}>
-      <Sidebar className="sidebar" collection={currentCollectionContract} isOpen={isOpen} setIsOpen={setIsOpen} cartItem={cartItem} setCartItem={setCartItem}></Sidebar>
-      <div mt="md" styles="width:100%;">
+      <Sidebar collection={currentCollectionContract} isOpen={isOpen} setIsOpen={setIsOpen} cartItem={cartItem} setCartItem={setCartItem}></Sidebar>
         <Text fz="xl" fw="700">Select your collection</Text>
         <Text fw="300" fz="sm">By changing your collection your basket will be emptied</Text>
         <Pagination my="md" total={numberOfContract} onChange={(p) => { fetchCollectibles(p - 1, 1, 8, true) }} />
@@ -154,7 +138,7 @@ export default function Shop() {
         <Grid>
           {
             collectibles.map((item, index) => (
-              <Grid.Col xs={3} >
+              <Grid.Col xs={3}>
                 {
                   (!loading) ? (
                     <NFTCard metadata={item} addToCart={addToCart}></NFTCard>
@@ -167,7 +151,6 @@ export default function Shop() {
           }
         </Grid>
         <Pagination my="md" total={pageNumber} onChange={(p) => { fetchCollectibles(activeCollection, p, 8) }} />
-      </div>
     </div>
   );
 }
