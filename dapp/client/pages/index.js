@@ -1,4 +1,4 @@
-import { Grid, Pagination, Text, Button, Group } from '@mantine/core';
+import { Grid, Pagination, Text, Skeleton } from '@mantine/core';
 import { NFTCard } from '../components/NFTCard'
 import { useEffect, useRef, useState } from "react";
 import ABIs from '../constants/abis.json'
@@ -17,25 +17,31 @@ export default function Shop() {
   const [activeCollection, setActiveCollection] = useState(1)
   const [activePage, setActivePage] = useState(1)
   const [pageNumber, setPageNumber] = useState(0)
+  const [loading, setLoading] = useState(false)
 
   const fecthShopNFTGenerator = async () => {
     var ShopNFTGenerator;
+    setLoading(true)
     var provider;
     try {
       provider = new ethers.providers.Web3Provider(window.ethereum)
     } catch (err) {
+      setLoading(false)
       alert(err.message)
     }
     try {
       ShopNFTGenerator = new ethers.Contract(ADDRESSES.ShopNFTGenerator, ABIs.ShopNFTGenerator, provider)
     } catch (err) {
+      setLoading(false)
       throw Error(err)
     }
+    setLoading(false)
     setNumberOfContract(parseInt(await ShopNFTGenerator.index()))
   }
 
   const fetchCollectibles = async (colNumber = 0, page = 1, count = 8, clearMode = false) => {
     setActivePage(page)
+    setLoading(true)
     setActiveCollection(colNumber)
     if (clearMode) {
       localStorage.clear()
@@ -54,6 +60,7 @@ export default function Shop() {
       ShopNFTGenerator = new ethers.Contract(ADDRESSES.ShopNFTGenerator, ABIs.ShopNFTGenerator, provider)
     } catch (err) {
       throw Error(err)
+      setLoading(false)
     }
     var collectibleList = [];
     try {
@@ -61,12 +68,14 @@ export default function Shop() {
       setCurrentCollection(collectionContract);
     } catch (err) {
       throw Error(err)
+      setLoading(false)
     }
 
     try {
       Collectibles = new ethers.Contract(collectionContract, ABIs.Collectible, provider)
     } catch (err) {
       throw Error(err)
+      setLoading(false)
     }
 
     var i = (page - 1) * count;
@@ -87,6 +96,7 @@ export default function Shop() {
       }
       i += 1
     }
+    setLoading(false)
     setCollectibles(collectibleList)
     setCollectionName(await Collectibles.name())
   }
@@ -111,14 +121,31 @@ export default function Shop() {
     return s[tokenId]
   }
 
+  const clickOutsideSidebar = () => {
+    document && (
+      document.addEventListener("click", (e) => {
+        let classList = e.target.className;
+        if (
+          typeof classList === "string" &&
+          !classList.includes("sidebar")
+        ) {
+          setIsOpen(false);
+        }
+      })
+    )
+  }
+
   useEffect(() => {
     // if wallet is not connected, create a new instance of Web3Modal and connect the MetaMask wallet     
     fecthShopNFTGenerator();
     fetchCollectibles();
+    clickOutsideSidebar()
+    
   }, []);
+
   return (
     <div style={{ margin: "0 50px" }}>
-      <Sidebar collection={currentCollectionContract} isOpen={isOpen} setIsOpen={setIsOpen} cartItem={cartItem} setCartItem={setCartItem}></Sidebar>
+      <Sidebar className="sidebar" collection={currentCollectionContract} isOpen={isOpen} setIsOpen={setIsOpen} cartItem={cartItem} setCartItem={setCartItem}></Sidebar>
       <div mt="md" styles="width:100%;">
         <Text fz="xl" fw="700">Select your collection</Text>
         <Text fw="300" fz="sm">By changing your collection your basket will be emptied</Text>
@@ -128,7 +155,13 @@ export default function Shop() {
           {
             collectibles.map((item, index) => (
               <Grid.Col xs={3} >
-                <NFTCard metadata={item} addToCart={addToCart}></NFTCard>
+                {
+                  (!loading) ? (
+                    <NFTCard metadata={item} addToCart={addToCart}></NFTCard>
+                    ) : (
+                      <Skeleton visible={loading} height={200} radius="xl" />
+                    )
+                }
               </Grid.Col>
             ))
           }

@@ -25,6 +25,7 @@ export const connect = async (web3Modal, setProvider) => {
         }
         return null
     } catch (err) {
-        alert(err.message)
+        alert(err)
     }
+    return null
 };

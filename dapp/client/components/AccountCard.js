@@ -28,7 +28,11 @@ import {
     const [balance, setBalance] = useState("0");
 
     const getBalance = async () => {
+      try {
         setBalance(await provider.getBalance(address))
+      } catch {
+        setBalance("0")
+      }
     }
 
     useEffect(() => {
@@ -46,7 +50,9 @@ import {
   
             <Text color="dimmed" size="xs">
             <IconCurrencyEthereum size={10} />
-              {parseFloat(ethers.utils.formatEther(balance)).toFixed(2)}
+              {
+                parseFloat(ethers.utils.formatEther(balance)).toFixed(2)
+              }
             </Text>
           </div>
         </Group>
